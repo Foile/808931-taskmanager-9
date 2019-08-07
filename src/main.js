@@ -271,8 +271,8 @@ const getMarkup = (blockName) => {
   return result;
 };
 
-const doRender = (containerElement, markup) => {
-  containerElement.innerHTML = markup;
+const componentRender = (container, markup) => {
+  container.innerHTML = markup;
 };
 
 const mainElement = document.querySelector(`.main`);
@@ -280,36 +280,30 @@ const mainControlElement = mainElement.querySelector(`.main__control .control__b
 const mainSearchElement = mainElement.querySelector(`.main__search`);
 const mainFilterElement = mainElement.querySelector(`.main__filter`);
 
-doRender(mainControlElement, getMarkup(`menu`));
-doRender(mainSearchElement, getMarkup(`search`));
-doRender(mainFilterElement, getMarkup(`filter`));
+componentRender(mainControlElement, getMarkup(`menu`));
+componentRender(mainSearchElement, getMarkup(`search`));
+componentRender(mainFilterElement, getMarkup(`filter`));
 
 const card1 = document.createElement(`article`);
 card1.classList.add(`card`, `card--edit`, `card--black`);
-doRender(card1, getMarkup(`card-form`));
+componentRender(card1, getMarkup(`card-form`));
 
 const card2 = document.createElement(`article`);
 card2.classList.add(`card`, `card--blue`);
-doRender(card2, getMarkup(`card`));
+componentRender(card2, getMarkup(`card`));
 
 const card3 = document.createElement(`article`);
 card3.classList.add(`card`, `card--yellow`);
-doRender(card3, getMarkup(`card`));
+componentRender(card3, getMarkup(`card`));
 
 const card4 = document.createElement(`article`);
 card4.classList.add(`card`, `card--green`);
-doRender(card4, getMarkup(`card`));
+componentRender(card4, getMarkup(`card`));
+
+const btnLoadMore = document.createElement(`div`);
+componentRender(btnLoadMore, getMarkup(`load-more`));
 
 const boardElement = document.querySelector(`.board`);
-
-const createElementFromHTML = (htmlString) => {
-  const div = document.createElement(`div`);
-  div.innerHTML = htmlString.trim();
-  return div.firstChild;
-};
-
-const btnLoadMore = createElementFromHTML(`<button class="load-more" type="button">load more</button>`);
-
 boardElement.appendChild(btnLoadMore);
 
 const boardTasksElement = boardElement.querySelector(`.board__tasks`);
