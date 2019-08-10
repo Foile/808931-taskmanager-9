@@ -1,6 +1,6 @@
 'use strict';
 
-const menuMarkup = `<section class="control__btn-wrap">
+const menuMarkup = (classes) =>`<section class="${classes}">
 <input
   type="radio"
   name="control"
@@ -29,15 +29,15 @@ const menuMarkup = `<section class="control__btn-wrap">
 >
 </section>`;
 
-const searchMarkup = `<input
+const searchMarkup = (classes) => `<section class="${classes}"><input
 type="text"
 id="search__input"
 class="search__input"
 placeholder="START TYPING — SEARCH BY WORD, #HASHTAG OR DATE"
 />
-<label class="visually-hidden" for="search__input">Search</label>`;
+<label class="visually-hidden" for="search__input">Search</label></section>`;
 
-const filterMarkup = `<input
+const filterMarkup = (classes) => `<section class="${classes}"><input
 type="radio"
 id="filter__all"
 class="filter__input visually-hidden"
@@ -102,10 +102,11 @@ name="filter"
 />
 <label for="filter__archive" class="filter__label"
 >Archive <span class="filter__archive-count">115</span></label
->`;
+></section>`;
 
-const cardMarkup = `<div class="card__form">
-  <div class="card__inner">
+let getCardMarkup = (classes) => `<article class="${classes}">
+ <div class="card__form">
+   <div class="card__inner">
     <div class="card__control">
       <button type="button" class="card__btn card__btn--edit">
         edit
@@ -115,22 +116,18 @@ const cardMarkup = `<div class="card__form">
       </button>
       <button
         type="button"
-        class="card__btn card__btn--favorites card__btn--disabled"
-      >
+        class="card__btn card__btn--favorites card__btn--disabled">
         favorites
       </button>
     </div>
-
     <div class="card__color-bar">
       <svg class="card__color-bar-wave" width="100%" height="10">
         <use xlink:href="#wave"></use>
       </svg>
     </div>
-
     <div class="card__textarea-wrap">
       <p class="card__text">Example default task with default color.</p>
     </div>
-
     <div class="card__settings">
       <div class="card__details">
         <div class="card__dates">
@@ -149,13 +146,11 @@ const cardMarkup = `<div class="card__form">
                 #todo
               </span>
             </span>
-
             <span class="card__hashtag-inner">
               <span class="card__hashtag-name">
                 #personal
               </span>
             </span>
-
             <span class="card__hashtag-inner">
               <span class="card__hashtag-name">
                 #important
@@ -166,9 +161,10 @@ const cardMarkup = `<div class="card__form">
       </div>
     </div>
   </div>
-</div>`;
+</div>
+</article>`;
 
-const cardFormMarkup = `<form class="card__form" method="get">
+const cardFormMarkup = (classes) => `<article class="${classes}"><form class="card__form" method="get">
   <div class="card__inner">
     <div class="card__control">
       <button type="button" class="card__btn card__btn--archive">
@@ -249,66 +245,62 @@ const cardFormMarkup = `<form class="card__form" method="get">
       <button class="card__delete" type="button">delete</button>
     </div>
   </div>
-</form>`;
+</form></article>`;
 
-const loadMoreMarkup = `<button class="load-more" type="button">load more</button>`;
+const board = () => `<section class="board container">
+<div class="board__filter-list">
+  <a href="#" class="board__filter">SORT BY DEFAULT</a>
+  <a href="#" class="board__filter">SORT BY DATE up</a>
+  <a href="#" class="board__filter">SORT BY DATE down</a>
+</div>
+
+<div class="board__tasks">
+</div>
+</section>`;
+
+const loadMoreMarkup = (classes) => `<button class="${classes}" type="button">load more</button>`;
 
 
-const getMarkup = (blockName) => {
-  let result;
-
+const getMarkup = (blockName, data) => {
   switch (blockName) {
-    case `menu`: result = menuMarkup; break;
-    case `search`: result = searchMarkup; break;
-    case `filter`: result = filterMarkup; break;
-    case `card`: result = cardMarkup; break;
-    case `card-form`: result = cardFormMarkup; break;
-    case `load-more`: result = loadMoreMarkup; break;
-
+    case `menu`: return menuMarkup(data.classes.join(` `));
+    case `search`: return searchMarkup(data.classes.join(` `));
+    case `filter`: return filterMarkup(data.classes.join(` `));
+    case `card`: return getCardMarkup(data.classes.join(` `));
+    case `card-form`: return cardFormMarkup(data.classes.join(` `));
+    case `load-more`: return loadMoreMarkup(data.classes.join(` `));
+    case `board`: return board();
     default: throw new Error(`getMarkup: markup not found.`);
   }
-
-  return result;
 };
 
-const componentRender = (container, markup) => {
-  container.innerHTML = markup;
+const render = (container, template, place) => {
+  container.insertAdjacentHTML(place, template);
 };
 
 const mainElement = document.querySelector(`.main`);
-const mainControlElement = mainElement.querySelector(`.main__control .control__btn-wrap`);
-const mainSearchElement = mainElement.querySelector(`.main__search`);
-const mainFilterElement = mainElement.querySelector(`.main__filter`);
+const headerElement = document.querySelector(`.main__control`);
+render(headerElement, getMarkup(`menu`, {classes: [`control__btn-wrap`]}), `beforeEnd`);
+render(mainElement, getMarkup(`search`, {classes: [`main__search`, `search`, `container`]}), `beforeEnd`);
+render(mainElement, getMarkup(`filter`, {classes: [`main__filter`, `filter`, `container`]}), `beforeEnd`);
 
-componentRender(mainControlElement, getMarkup(`menu`));
-componentRender(mainSearchElement, getMarkup(`search`));
-componentRender(mainFilterElement, getMarkup(`filter`));
+const cards =
+    [{color: `black`, edit: true},
+      {color: `blue`},
+      {color: `yellow`},
+      {color: `green`}
+    ];
 
-const card1 = document.createElement(`article`);
-card1.classList.add(`card`, `card--edit`, `card--black`);
-componentRender(card1, getMarkup(`card-form`));
-
-const card2 = document.createElement(`article`);
-card2.classList.add(`card`, `card--blue`);
-componentRender(card2, getMarkup(`card`));
-
-const card3 = document.createElement(`article`);
-card3.classList.add(`card`, `card--yellow`);
-componentRender(card3, getMarkup(`card`));
-
-const card4 = document.createElement(`article`);
-card4.classList.add(`card`, `card--green`);
-componentRender(card4, getMarkup(`card`));
-
-const btnLoadMore = document.createElement(`div`);
-componentRender(btnLoadMore, getMarkup(`load-more`));
-
+render(mainElement, getMarkup(`board`, {}), `beforeEnd`);
 const boardElement = document.querySelector(`.board`);
-boardElement.appendChild(btnLoadMore);
-
 const boardTasksElement = boardElement.querySelector(`.board__tasks`);
 
-boardTasksElement.appendChild(card1);
-boardTasksElement.appendChild(card2);
-boardTasksElement.appendChild(card3);
-boardTasksElement.appendChild(card4);
+cards.forEach(({color, edit}) => {
+  let classes = [`card`, `card--${color}`];
+  if (edit) {
+    classes.push(`card--edit`);
+  }
+  render(boardTasksElement, getMarkup(edit ? `card-form` : `card`, {classes}), `beforeEnd`);
+});
+
+render(boardElement, getMarkup(`load-more`, {classes: [`load-more`]}), `beforeEnd`);
