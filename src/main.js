@@ -260,7 +260,6 @@ const board = () => `<section class="board container">
 
 const loadMoreMarkup = (classes) => `<button class="${classes}" type="button">load more</button>`;
 
-
 const getMarkup = (blockName, data) => {
   switch (blockName) {
     case `menu`: return menuMarkup(data.classes.join(` `));
@@ -284,12 +283,11 @@ render(headerElement, getMarkup(`menu`, {classes: [`control__btn-wrap`]}), `befo
 render(mainElement, getMarkup(`search`, {classes: [`main__search`, `search`, `container`]}), `beforeEnd`);
 render(mainElement, getMarkup(`filter`, {classes: [`main__filter`, `filter`, `container`]}), `beforeEnd`);
 
-const cards =
-    [{color: `black`, edit: true},
-      {color: `blue`},
-      {color: `yellow`},
-      {color: `green`}
-    ];
+const cards = [{color: `black`, edit: true},
+  {color: `blue`},
+  {color: `yellow`},
+  {color: `green`}
+];
 
 render(mainElement, getMarkup(`board`, {}), `beforeEnd`);
 const boardElement = document.querySelector(`.board`);
