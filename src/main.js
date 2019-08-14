@@ -25,8 +25,9 @@ const render = (container, template, place) => {
 };
 
 let editTask = getTask();
-editTask.edit = true;
-const cards = [editTask, getTask(), getTask(), getTask(), getTask(), getTask(), getTask()];
+editTask[0].edit = true;
+let cards = [...editTask, ...getTask(7)];
+
 const mainElement = document.querySelector(`.main`);
 const headerElement = document.querySelector(`.main__control`);
 
@@ -44,3 +45,8 @@ cards.forEach((task) => {
 });
 
 render(boardElement, getMarkup(`load-more`, {classes: [`load-more`]}), `beforeEnd`);
+
+cards = [...getTask(8)];
+cards.forEach((task) => {
+  render(boardTasksElement, getMarkup(task.edit ? `card-form` : `card`, task), `beforeEnd`);
+});
