@@ -11,10 +11,10 @@ class="card card--${color} card--edit ${Object.keys(repeatingDays).some((day) =>
         favorites
       </button>
     </div>
-    <div class="card__color-bar">
-      <svg class="card__color-bar-wave" width="100%" height="10">
-        <use xlink:href="#wave"></use>
-      </svg>
+    <div class="card__color-bar">${ Object.keys(repeatingDays).some((day) => repeatingDays[day]) ?
+    `<svg width="100%" height="10">
+  <use xlink:href="#wave"></use>
+  </svg>` : ``}
     </div>
     <div class="card__textarea-wrap">
       <label>
