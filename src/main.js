@@ -26,8 +26,8 @@ const render = (container, template, place) => {
 
 let allCards = [];
 
-const loadMore = () => {
-  const cards = [...getTask(8)];
+const renderCards = (cards) => {
+  const boardTasksElement = boardElement.querySelector(`.board__tasks`);
   cards.forEach((task) => {
     render(boardTasksElement, getMarkup(task.edit ? `card-form` : `card`, task), `beforeEnd`);
   });
@@ -38,26 +38,22 @@ const loadMore = () => {
   }
 };
 
-let editTask = getTask();
-editTask[0].edit = true;
-const cards = [...editTask, ...getTask(7)];
-allCards = [...allCards, ...cards];
+const loadMore = () => renderCards([...getTask(8)]);
 
 const mainElement = document.querySelector(`.main`);
 const headerElement = document.querySelector(`.main__control`);
 
 render(headerElement, getMarkup(`menu`, {classes: [`control__btn-wrap`]}), `beforeEnd`);
 render(mainElement, getMarkup(`search`, {classes: [`main__search`, `search`, `container`]}), `beforeEnd`);
-const filters = calcFilters(cards);
+const filters = calcFilters(allCards);
 render(mainElement, getMarkup(`filter`, filters), `beforeEnd`);
 
 render(mainElement, getMarkup(`board`, {}), `beforeEnd`);
-const boardElement = document.querySelector(`.board`);
-const boardTasksElement = boardElement.querySelector(`.board__tasks`);
 
-cards.forEach((task) => {
-  render(boardTasksElement, getMarkup(task.edit ? `card-form` : `card`, task), `beforeEnd`);
-});
+const boardElement = document.querySelector(`.board`);
+let editTask = getTask();
+editTask[0].edit = true;
+renderCards([...editTask, ...getTask(7)]);
 
 render(boardElement, getMarkup(`load-more`, {classes: [`load-more`]}), `beforeEnd`);
 boardElement.querySelector(`.load-more`).addEventListener(`click`, loadMore);
