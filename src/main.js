@@ -24,9 +24,24 @@ const render = (container, template, place) => {
   container.insertAdjacentHTML(place, template);
 };
 
+let allCards = [];
+
+const loadMore = () => {
+  const cards = [...getTask(8)];
+  cards.forEach((task) => {
+    render(boardTasksElement, getMarkup(task.edit ? `card-form` : `card`, task), `beforeEnd`);
+  });
+  allCards = [...allCards, ...cards];
+  if (allCards.length > 42) {
+    boardElement.querySelector(`.load-more`).remove();
+    return;
+  }
+};
+
 let editTask = getTask();
 editTask[0].edit = true;
-let cards = [...editTask, ...getTask(7)];
+const cards = [...editTask, ...getTask(7)];
+allCards = [...allCards, ...cards];
 
 const mainElement = document.querySelector(`.main`);
 const headerElement = document.querySelector(`.main__control`);
@@ -45,8 +60,6 @@ cards.forEach((task) => {
 });
 
 render(boardElement, getMarkup(`load-more`, {classes: [`load-more`]}), `beforeEnd`);
+boardElement.querySelector(`.load-more`).addEventListener(`click`, loadMore);
 
-cards = [...getTask(8)];
-cards.forEach((task) => {
-  render(boardTasksElement, getMarkup(task.edit ? `card-form` : `card`, task), `beforeEnd`);
-});
+
