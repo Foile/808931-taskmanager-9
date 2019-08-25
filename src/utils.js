@@ -9,8 +9,7 @@ export const createElement = (template) => {
   return newElement.firstChild;
 };
 
-// Рендер и анрендер для компонент
-export const render = (container, element, place) => {
+export const render = (container, element, place = Position.BEFOREEND) => {
   switch (place) {
     case Position.AFTERBEGIN:
       container.prepend(element);
@@ -21,8 +20,9 @@ export const render = (container, element, place) => {
   }
 };
 
-export const unrender = (element) => {
-  if (element) {
-    element.remove();
+export const unrender = (component) => {
+  if (component._element) {
+    component._element.remove();
+    component.removeElement();
   }
 };

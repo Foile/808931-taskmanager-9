@@ -16,7 +16,7 @@ export const getTask = (count = 1) => {
         `practice`,
         `intensive`,
         `keks`,
-      ].filter(()=>Boolean(Math.round(Math.random())))),
+      ].filter(() => Boolean(Math.round(Math.random())))),
       repeatingDays: {
         'mo': boolRandom(),
         'tu': boolRandom(),
@@ -33,8 +33,8 @@ export const getTask = (count = 1) => {
         `green`,
         `pink`,
       ][Math.floor(Math.random() * 5)],
-      isFavorive: Boolean(Math.round(Math.random())),
-      isArchive: Boolean(Math.round(Math.random())),
+      isFavorive: boolRandom(),
+      isArchive: boolRandom(),
     });
   }
   return result;
@@ -52,7 +52,6 @@ const filters = [
 
 export const calcFilters = (tasks) => {
   let result = [];
-  console.log(tasks);
   for (const filter of filters) {
     result.push({
       title: filter.title,

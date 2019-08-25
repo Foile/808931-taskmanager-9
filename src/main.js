@@ -3,36 +3,37 @@ import {Search} from './components/search';
 import {Filters} from './components/filter';
 import {Task} from './components/task';
 import {TaskEdit} from './components/task-edit';
-import {Board} from './components/board';
+import {Board, EmptyBoard} from './components/board';
 import {LoadMore} from './components/load-more';
 import {getTask, calcFilters} from './data';
-import {Position, render, unrender} from './utils';
-
-let allCards = [];
+import {render, unrender} from './utils';
 
 const loadMore = () => renderCards([...getTask(8)]);
-const loadMoreElement = new LoadMore().getElement();
-loadMoreElement.addEventListener(`click`, loadMore);
+const loadMoreElement = new LoadMore();
+loadMoreElement.getElement().addEventListener(`click`, loadMore);
 
 const mainElement = document.querySelector(`.main`);
 const headerElement = document.querySelector(`.main__control`);
 
-render(headerElement, new Menu().getElement(), Position.BEFOREEND);
-render(mainElement, new Search().getElement(), Position.BEFOREEND);
+render(headerElement, new Menu().getElement());
+render(mainElement, new Search().getElement());
 
-const filters = calcFilters(allCards);
-render(mainElement, new Filters(filters).getElement(), Position.BEFOREEND);
+const filters = new Filters(calcFilters([]));
+render(mainElement, filters.getElement());
 
-const boardElement = new Board().getElement();
-render(mainElement, boardElement, Position.BEFOREEND);
-const tasksContainer = boardElement.querySelector(`.board__tasks`);
-render(boardElement, loadMoreElement, Position.BEFOREEND);
+const board = new Board();
+render(mainElement, board.getElement());
+const tasksContainer = board.getElement().querySelector(`.board__tasks`);
+render(board.getElement(), loadMoreElement.getElement());
+
+let boardTasks = [];
 
 const renderCards = (cards) => {
   cards.forEach((data) => {
 
     const task = new Task(data);
     const taskEdit = new TaskEdit(data);
+    boardTasks.push({task, taskEdit});
 
     const onEscKeyDown = (evt) => {
       if (evt.key === `Escape` || evt.key === `Esc`) {
@@ -65,14 +66,20 @@ const renderCards = (cards) => {
         document.removeEventListener(`keydown`, onEscKeyDown);
       });
 
-    render(tasksContainer, task.getElement(), Position.BEFOREEND);
+    render(tasksContainer, task.getElement());
 
   });
-  allCards = [...allCards, ...cards];
-  if (allCards.length > 42) {
+  if (boardTasks.length > 42) {
     unrender(loadMoreElement);
     return;
   }
 };
 
 renderCards([...getTask(7)]);
+let activeTasks = boardTasks.filter(({task}) => task._isArchive);
+let emptyBoard = new EmptyBoard();
+if (activeTasks.length === 0) {
+  unrender(board);
+  render(mainElement, emptyBoard.getElement());
+}
+
