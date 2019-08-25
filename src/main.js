@@ -1,61 +1,78 @@
-import {menuMarkup} from './components/menu';
-import {searchMarkup} from './components/search';
-import {filterMarkup} from './components/filter';
-import {cardMarkup} from './components/card';
-import {cardEditMarkup} from './components/card-edit';
-import {board} from './components/board';
-import {loadMoreMarkup} from './components/load-more';
+import {Menu} from './components/menu';
+import {Search} from './components/search';
+import {Filters} from './components/filter';
+import {Task} from './components/task';
+import {TaskEdit} from './components/task-edit';
+import {Board} from './components/board';
+import {LoadMore} from './components/load-more';
 import {getTask, calcFilters} from './data';
-
-const getMarkup = (blockName, data) => {
-  switch (blockName) {
-    case `menu`: return menuMarkup(data.classes.join(` `));
-    case `search`: return searchMarkup(data.classes.join(` `));
-    case `filter`: return filterMarkup(data);
-    case `card`: return cardMarkup(data);
-    case `card-form`: return cardEditMarkup(data);
-    case `load-more`: return loadMoreMarkup(data.classes.join(` `));
-    case `board`: return board();
-    default: throw new Error(`getMarkup: markup not found.`);
-  }
-};
-
-const render = (container, template, place) => {
-  container.insertAdjacentHTML(place, template);
-};
+import {Position, render, unrender} from './utils';
 
 let allCards = [];
 
-const renderCards = (cards) => {
-  const boardTasksElement = boardElement.querySelector(`.board__tasks`);
-  cards.forEach((task) => {
-    render(boardTasksElement, getMarkup(task.edit ? `card-form` : `card`, task), `beforeEnd`);
-  });
-  allCards = [...allCards, ...cards];
-  if (allCards.length > 42) {
-    boardElement.querySelector(`.load-more`).remove();
-    return;
-  }
-};
-
 const loadMore = () => renderCards([...getTask(8)]);
+const loadMoreElement = new LoadMore().getElement();
+loadMoreElement.addEventListener(`click`, loadMore);
 
 const mainElement = document.querySelector(`.main`);
 const headerElement = document.querySelector(`.main__control`);
 
-render(headerElement, getMarkup(`menu`, {classes: [`control__btn-wrap`]}), `beforeEnd`);
-render(mainElement, getMarkup(`search`, {classes: [`main__search`, `search`, `container`]}), `beforeEnd`);
+render(headerElement, new Menu().getElement(), Position.BEFOREEND);
+render(mainElement, new Search().getElement(), Position.BEFOREEND);
+
 const filters = calcFilters(allCards);
-render(mainElement, getMarkup(`filter`, filters), `beforeEnd`);
+render(mainElement, new Filters(filters).getElement(), Position.BEFOREEND);
 
-render(mainElement, getMarkup(`board`, {}), `beforeEnd`);
+const boardElement = new Board().getElement();
+render(mainElement, boardElement, Position.BEFOREEND);
+const tasksContainer = boardElement.querySelector(`.board__tasks`);
+render(boardElement, loadMoreElement, Position.BEFOREEND);
 
-const boardElement = document.querySelector(`.board`);
-let editTask = getTask();
-editTask[0].edit = true;
-renderCards([...editTask, ...getTask(7)]);
+const renderCards = (cards) => {
+  cards.forEach((data) => {
 
-render(boardElement, getMarkup(`load-more`, {classes: [`load-more`]}), `beforeEnd`);
-boardElement.querySelector(`.load-more`).addEventListener(`click`, loadMore);
+    const task = new Task(data);
+    const taskEdit = new TaskEdit(data);
 
+    const onEscKeyDown = (evt) => {
+      if (evt.key === `Escape` || evt.key === `Esc`) {
+        tasksContainer.replaceChild(task.getElement(), taskEdit.getElement());
+        document.removeEventListener(`keydown`, onEscKeyDown);
+      }
+    };
 
+    task.getElement()
+      .querySelector(`.card__btn--edit`)
+      .addEventListener(`click`, () => {
+        tasksContainer.replaceChild(taskEdit.getElement(), task.getElement());
+        document.addEventListener(`keydown`, onEscKeyDown);
+      });
+
+    taskEdit.getElement().querySelector(`textarea`)
+      .addEventListener(`focus`, () => {
+        document.removeEventListener(`keydown`, onEscKeyDown);
+      });
+
+    taskEdit.getElement().querySelector(`textarea`)
+      .addEventListener(`blur`, () => {
+        document.addEventListener(`keydown`, onEscKeyDown);
+      });
+
+    taskEdit.getElement()
+      .querySelector(`.card__save`)
+      .addEventListener(`click`, () => {
+        tasksContainer.replaceChild(task.getElement(), taskEdit.getElement());
+        document.removeEventListener(`keydown`, onEscKeyDown);
+      });
+
+    render(tasksContainer, task.getElement(), Position.BEFOREEND);
+
+  });
+  allCards = [...allCards, ...cards];
+  if (allCards.length > 42) {
+    unrender(loadMoreElement);
+    return;
+  }
+};
+
+renderCards([...getTask(7)]);
