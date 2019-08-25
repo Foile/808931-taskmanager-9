@@ -1,3 +1,5 @@
+const boolRandom = () => Boolean(Math.round(Math.random() * 0.6));
+
 export const getTask = (count = 1) => {
   let result = [];
   while (result.length < count) {
@@ -16,13 +18,13 @@ export const getTask = (count = 1) => {
         `keks`,
       ].filter(()=>Boolean(Math.round(Math.random())))),
       repeatingDays: {
-        'mo': Boolean(Math.round(Math.random() * 0.6)),
-        'tu': Boolean(Math.round(Math.random() * 0.6)),
-        'we': Boolean(Math.round(Math.random() * 0.6)),
-        'th': Boolean(Math.round(Math.random() * 0.6)),
-        'fr': Boolean(Math.round(Math.random() * 0.6)),
-        'sa': Boolean(Math.round(Math.random() * 0.6)),
-        'su': Boolean(Math.round(Math.random() * 0.6)),
+        'mo': boolRandom(),
+        'tu': boolRandom(),
+        'we': boolRandom(),
+        'th': boolRandom(),
+        'fr': boolRandom(),
+        'sa': boolRandom(),
+        'su': boolRandom(),
       },
       color: [
         `black`,
@@ -50,10 +52,11 @@ const filters = [
 
 export const calcFilters = (tasks) => {
   let result = [];
-  for (const fil of filters) {
+  console.log(tasks);
+  for (const filter of filters) {
     result.push({
-      title: fil.title,
-      count: tasks.filter((arg) => fil.callback(arg)).length
+      title: filter.title,
+      count: tasks.filter((arg) => filter.callback(arg)).length
     });
   }
   return result;
