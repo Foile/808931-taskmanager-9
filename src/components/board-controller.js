@@ -30,20 +30,18 @@ export class BoardController {
 
     switch (evt.target.dataset.sortType) {
       case `date-up`:
-        const sortedByDateUpTasks = this._tasks.slice().sort((a, b) => a.dueDate - b.dueDate);
-        this._renderTasks(sortedByDateUpTasks);
+        this._renderTasks(this._tasks.slice().sort((a, b) => a.dueDate - b.dueDate));
         break;
       case `date-down`:
-        const sortedByDateDownTasks = this._tasks.slice().sort((a, b) => b.dueDate - a.dueDate);
-        this._renderTasks(sortedByDateDownTasks);
+        this._renderTasks(this._tasks.slice().sort((a, b) => b.dueDate - a.dueDate));
         break;
       case `default`:
         this._tasks.forEach((task) => this._renderTask(task));
         break;
     }
   }
-  _renderTask(data) {
 
+  _renderTask(data) {
     const task = new Task(data);
     const taskEdit = new TaskEdit(data);
 
@@ -53,30 +51,27 @@ export class BoardController {
         document.removeEventListener(`keydown`, onEscKeyDown);
       }
     };
-
-    task.getElement()
-  .querySelector(`.card__btn--edit`)
-  .addEventListener(`click`, () => {
-    this._taskList.replaceChild(taskEdit.getElement(), task.getElement());
-    document.addEventListener(`keydown`, onEscKeyDown);
-  });
+    task.getElement().querySelector(`.card__btn--edit`)
+          .addEventListener(`click`, () => {
+            this._taskList.replaceChild(taskEdit.getElement(), task.getElement());
+            document.addEventListener(`keydown`, onEscKeyDown);
+          });
 
     taskEdit.getElement().querySelector(`textarea`)
-  .addEventListener(`focus`, () => {
-    document.removeEventListener(`keydown`, onEscKeyDown);
-  });
+          .addEventListener(`focus`, () => {
+            document.removeEventListener(`keydown`, onEscKeyDown);
+          });
 
     taskEdit.getElement().querySelector(`textarea`)
-  .addEventListener(`blur`, () => {
-    document.addEventListener(`keydown`, onEscKeyDown);
-  });
+          .addEventListener(`blur`, () => {
+            document.addEventListener(`keydown`, onEscKeyDown);
+          });
 
-    taskEdit.getElement()
-  .querySelector(`.card__save`)
-  .addEventListener(`click`, () => {
-    this._taskList.replaceChild(task.getElement(), taskEdit.getElement());
-    document.removeEventListener(`keydown`, onEscKeyDown);
-  });
+    taskEdit.getElement().querySelector(`.card__save`)
+          .addEventListener(`click`, () => {
+            this._taskList.replaceChild(task.getElement(), taskEdit.getElement());
+            document.removeEventListener(`keydown`, onEscKeyDown);
+          });
 
     render(this._taskList.getElement(), task.getElement());
   }
@@ -91,8 +86,7 @@ export class BoardController {
   }
 
   _onLoadMoreClick() {
-    this._renderTasks([...this._tasks.splice(0, PAGE_COUNT)])
-    ;
+    this._renderTasks([...this._tasks.splice(0, PAGE_COUNT)]);
   }
   init() {
     render(this._container, this._board.getElement());
@@ -112,6 +106,6 @@ export class BoardController {
     }
 
     this._sort.getElement()
-    .addEventListener(`click`, (evt) => this._onSortLinkClick(evt));
+          .addEventListener(`click`, (evt) => this._onSortLinkClick(evt));
   }
 }
