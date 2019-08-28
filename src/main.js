@@ -11,7 +11,7 @@ const headerElement = document.querySelector(`.main__control`);
 
 render(headerElement, new Menu().getElement());
 render(mainElement, new Search().getElement());
-const board = new BoardController(mainElement, [...getTask(42)]);
+const board = new BoardController(mainElement, [...getTask(10)]);
 
 
 const filters = new Filters(calcFilters([]));
