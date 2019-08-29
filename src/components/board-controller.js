@@ -1,8 +1,10 @@
 import {Task} from './task';
 import {TaskEdit} from './task-edit';
 import {Board, EmptyBoard} from './board';
+import {TaskList} from './task-list';
 import {render, unrender} from '../utils';
 import {LoadMore} from './load-more';
+import {Sort} from './sort';
 
 const PAGE_COUNT = 8;
 
@@ -10,74 +12,109 @@ export class BoardController {
   constructor(container, tasks) {
     this._container = container;
     this._tasks = tasks;
+    this._originTasks = [];
+    Object.assign(this._originTasks, tasks);
+    this._boardTasks = [];
+    this._board = new Board();
+    this._sort = new Sort();
+    this._taskList = new TaskList();
+    this._loadMore = new LoadMore();
+  }
+
+  _update() {
+    Object.assign(this._tasks, this._originTasks);
     this._boardTasks = [];
   }
-  renderTask(data, tasksContainer) {
 
+  _onSortLinkClick(evt) {
+    evt.preventDefault();
+
+    if (evt.target.tagName !== `A`) {
+      return;
+    }
+    this._update();
+    this._taskList.getElement().innerHTML = ``;
+
+    switch (evt.target.dataset.sortType) {
+      case `date-up`:
+        this._tasks = this._tasks.slice().sort((a, b) => a.dueDate - b.dueDate);
+        this._renderCards(this._tasks.splice(0, PAGE_COUNT));
+        break;
+      case `date-down`:
+        this._tasks = this._tasks.slice().sort((a, b) => b.dueDate - a.dueDate);
+        this._renderCards(this._tasks.splice(0, PAGE_COUNT));
+        break;
+      case `default`:
+        this._renderCards(this._tasks.splice(0, PAGE_COUNT));
+        break;
+    }
+  }
+
+  _renderTask(data) {
     const task = new Task(data);
     const taskEdit = new TaskEdit(data);
+    this._boardTasks.push(data);
 
     const onEscKeyDown = (evt) => {
       if (evt.key === `Escape` || evt.key === `Esc`) {
-        tasksContainer.replaceChild(task.getElement(), taskEdit.getElement());
+        this._taskList.getElement().replaceChild(task.getElement(), taskEdit.getElement());
         document.removeEventListener(`keydown`, onEscKeyDown);
       }
     };
 
     task.getElement()
-  .querySelector(`.card__btn--edit`)
-  .addEventListener(`click`, () => {
-    tasksContainer.replaceChild(taskEdit.getElement(), task.getElement());
-    document.addEventListener(`keydown`, onEscKeyDown);
-  });
+    .querySelector(`.card__btn--edit`)
+    .addEventListener(`click`, () => {
+      this._taskList.getElement().replaceChild(taskEdit.getElement(), task.getElement());
+      document.addEventListener(`keydown`, onEscKeyDown);
+    });
 
     taskEdit.getElement().querySelector(`textarea`)
-  .addEventListener(`focus`, () => {
-    document.removeEventListener(`keydown`, onEscKeyDown);
-  });
+    .addEventListener(`focus`, () => {
+      document.removeEventListener(`keydown`, onEscKeyDown);
+    });
 
     taskEdit.getElement().querySelector(`textarea`)
-  .addEventListener(`blur`, () => {
-    document.addEventListener(`keydown`, onEscKeyDown);
-  });
+    .addEventListener(`blur`, () => {
+      document.addEventListener(`keydown`, onEscKeyDown);
+    });
 
     taskEdit.getElement()
-  .querySelector(`.card__save`)
-  .addEventListener(`click`, () => {
-    tasksContainer.replaceChild(task.getElement(), taskEdit.getElement());
-    document.removeEventListener(`keydown`, onEscKeyDown);
-  });
+    .querySelector(`.card__save`)
+    .addEventListener(`click`, () => {
+      this._taskList.getElement().replaceChild(task.getElement(), taskEdit.getElement());
+      document.removeEventListener(`keydown`, onEscKeyDown);
+    });
 
-    render(tasksContainer, task.getElement());
+    render(this._taskList.getElement(), task.getElement());
+  }
+  _renderCards(tasks) {
+    const loadMore = () => this._renderCards(this._tasks.splice(0, PAGE_COUNT));
+    this._loadMore.getElement().addEventListener(`click`, loadMore);
+    tasks.forEach((data) => {
+      this._renderTask(data, this._taskList.getElement());
+    });
+    if (this._tasks.length === 0) {
+      unrender(this._loadMore);
+      return;
+    }
+    render(this._board.getElement(), this._loadMore.getElement());
   }
 
   init() {
-    const loadMore = () => renderCards([...this._tasks.splice(0, PAGE_COUNT)]);
-    const loadMoreElement = new LoadMore();
-    loadMoreElement.getElement().addEventListener(`click`, loadMore);
+    render(this._board.getElement(), this._sort.getElement());
+    render(this._container, this._board.getElement());
+    render(this._board.getElement(), this._taskList.getElement());
 
-    const board = new Board();
-    render(this._container, board.getElement());
-    const tasksContainer = board.getElement().querySelector(`.board__tasks`);
-    render(board.getElement(), loadMoreElement.getElement());
-
-    this._boardTasks = [...this._boardTasks, ...this._tasks.splice(0, PAGE_COUNT)];
-    const renderCards = (tasks) => {
-      tasks.forEach((data) => {
-        this.renderTask(data, tasksContainer);
-      });
-      if (this._tasks.length === 0) {
-        unrender(loadMoreElement);
-        return;
-      }
-    };
-
-    renderCards(this._boardTasks);
-    let activeTasks = this._boardTasks.filter((task) => task.isArchive);
+    this._renderCards(this._tasks.splice(0, PAGE_COUNT));
+    let activeTasks = this._tasks.filter((task) => task.isArchive);
     let emptyBoard = new EmptyBoard();
     if (activeTasks.length === 0) {
-      unrender(board);
+      unrender(this._board);
       render(this._container, emptyBoard.getElement());
     }
+
+    this._sort.getElement()
+    .addEventListener(`click`, (evt) => this._onSortLinkClick(evt));
   }
 }
