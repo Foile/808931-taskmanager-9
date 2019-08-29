@@ -37,15 +37,15 @@ export class BoardController {
 
     switch (evt.target.dataset.sortType) {
       case `date-up`:
-        const sortedByDateUpTasks = this._originTasks.slice().sort((a, b) => a.dueDate - b.dueDate);
-        this._renderCards(sortedByDateUpTasks);
+        this._tasks = this._tasks.slice().sort((a, b) => a.dueDate - b.dueDate);
+        this._renderCards(this._tasks.splice(0, PAGE_COUNT));
         break;
       case `date-down`:
-        const sortedByDateDownTasks = this._originTasks.slice().sort((a, b) => b.dueDate - a.dueDate);
-        this._renderCards(sortedByDateDownTasks);
+        this._tasks = this._tasks.slice().sort((a, b) => b.dueDate - a.dueDate);
+        this._renderCards(this._tasks.splice(0, PAGE_COUNT));
         break;
       case `default`:
-        this._originTasks.forEach((task) => this._renderTask(task));
+        this._renderCards(this._tasks.splice(0, PAGE_COUNT));
         break;
     }
   }
@@ -53,9 +53,6 @@ export class BoardController {
   _renderTask(data) {
     const task = new Task(data);
     const taskEdit = new TaskEdit(data);
-    if (this._boardTasks.includes(data)) {
-      return;
-    }
     this._boardTasks.push(data);
 
     const onEscKeyDown = (evt) => {
