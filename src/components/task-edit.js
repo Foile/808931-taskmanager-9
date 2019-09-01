@@ -2,7 +2,7 @@ import {Task} from './task';
 
 export class TaskEdit extends Task {
   getTemplate() {
-    return `<article 
+    return `<article
   class="card card--${this.color} card--edit ${Object.keys(this._repeatingDays).some((day) => this._repeatingDays[day]) ? `card--repeat` : ``}
   ">
   <form class="card__form" method="get">
@@ -33,8 +33,8 @@ export class TaskEdit extends Task {
             </button>
             <fieldset class="card__date-deadline" ${this._dueDate ? `` : `disabled=""`}>
               <label class="card__input-deadline-wrap">
-                <input class="card__date" type="text" placeholder="${new Date(this._dueDate).toDateString()}" name="date">
-  
+                <input class="card__date" type="text" placeholder="${this._dueDate.toDateString()}" name="date">
+
               </label>
             </fieldset>
             <button class="card__repeat-toggle" type="button">
@@ -78,6 +78,30 @@ export class TaskEdit extends Task {
       </div>
     </div>
   </form></article>`;
+  }
+  _subscribeOnEvents() {
+
+    this.getElement()
+      .querySelector(`.card__hashtag-input`).addEventListener(`keydown`, (evt) => {
+        if (evt.key === `Enter`) {
+          evt.preventDefault();
+          this.getElement().querySelector(`.card__hashtag-list`).insertAdjacentHTML(`beforeend`, `<span class="card__hashtag-inner">
+          <input
+            type="hidden"
+            name="hashtag"
+            value="${evt.target.value}"
+            class="card__hashtag-hidden-input"
+          />
+          <p class="card__hashtag-name">
+            #${evt.target.value}
+          </p>
+          <button type="button" class="card__hashtag-delete">
+            delete
+          </button>
+        </span>`);
+          evt.target.value = ``;
+        }
+      });
   }
 }
 

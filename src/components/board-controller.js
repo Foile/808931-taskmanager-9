@@ -1,10 +1,9 @@
-import {Task} from './task';
-import {TaskEdit} from './task-edit';
 import {Board, EmptyBoard} from './board';
 import {TaskList} from './task-list';
 import {render, unrender} from '../utils';
 import {LoadMore} from './load-more';
 import {Sort} from './sort';
+import {TaskController} from './task-controller';
 
 const PAGE_COUNT = 8;
 
@@ -14,16 +13,18 @@ export class BoardController {
     this._tasks = tasks;
     this._originTasks = [];
     Object.assign(this._originTasks, tasks);
-    this._boardTasks = [];
+    this._subscriptions = [];
     this._board = new Board();
     this._sort = new Sort();
     this._taskList = new TaskList();
     this._loadMore = new LoadMore();
+    this._onChangeView = this._onChangeView.bind(this);
+    this._onDataChange = this._onDataChange.bind(this);
   }
 
   _update() {
     Object.assign(this._tasks, this._originTasks);
-    this._boardTasks = [];
+    this._subscriptions = [];
   }
 
   _onSortLinkClick(evt) {
@@ -38,61 +39,28 @@ export class BoardController {
     switch (evt.target.dataset.sortType) {
       case `date-up`:
         this._tasks = this._tasks.slice().sort((a, b) => a.dueDate - b.dueDate);
-        this._renderCards(this._tasks.splice(0, PAGE_COUNT));
+        this._renderBoard(this._tasks.splice(0, PAGE_COUNT));
         break;
       case `date-down`:
         this._tasks = this._tasks.slice().sort((a, b) => b.dueDate - a.dueDate);
-        this._renderCards(this._tasks.splice(0, PAGE_COUNT));
+        this._renderBoard(this._tasks.splice(0, PAGE_COUNT));
         break;
       case `default`:
-        this._renderCards(this._tasks.splice(0, PAGE_COUNT));
+        this._renderBoard(this._tasks.splice(0, PAGE_COUNT));
         break;
     }
   }
 
   _renderTask(data) {
-    const task = new Task(data);
-    const taskEdit = new TaskEdit(data);
-    this._boardTasks.push(data);
-
-    const onEscKeyDown = (evt) => {
-      if (evt.key === `Escape` || evt.key === `Esc`) {
-        this._taskList.getElement().replaceChild(task.getElement(), taskEdit.getElement());
-        document.removeEventListener(`keydown`, onEscKeyDown);
-      }
-    };
-
-    task.getElement()
-    .querySelector(`.card__btn--edit`)
-    .addEventListener(`click`, () => {
-      this._taskList.getElement().replaceChild(taskEdit.getElement(), task.getElement());
-      document.addEventListener(`keydown`, onEscKeyDown);
-    });
-
-    taskEdit.getElement().querySelector(`textarea`)
-    .addEventListener(`focus`, () => {
-      document.removeEventListener(`keydown`, onEscKeyDown);
-    });
-
-    taskEdit.getElement().querySelector(`textarea`)
-    .addEventListener(`blur`, () => {
-      document.addEventListener(`keydown`, onEscKeyDown);
-    });
-
-    taskEdit.getElement()
-    .querySelector(`.card__save`)
-    .addEventListener(`click`, () => {
-      this._taskList.getElement().replaceChild(task.getElement(), taskEdit.getElement());
-      document.removeEventListener(`keydown`, onEscKeyDown);
-    });
-
-    render(this._taskList.getElement(), task.getElement());
+    const taskController = new TaskController(this._taskList.getElement(), data, this._onDataChange, this._onChangeView);
+    this._subscriptions.push(taskController.setDefaultView.bind(taskController));
   }
-  _renderCards(tasks) {
-    const loadMore = () => this._renderCards(this._tasks.splice(0, PAGE_COUNT));
+
+  _renderBoard(tasks) {
+    const loadMore = () => this._renderBoard(this._tasks.splice(0, PAGE_COUNT));
     this._loadMore.getElement().addEventListener(`click`, loadMore);
     tasks.forEach((data) => {
-      this._renderTask(data, this._taskList.getElement());
+      this._renderTask(data);
     });
     if (this._tasks.length === 0) {
       unrender(this._loadMore);
@@ -101,12 +69,22 @@ export class BoardController {
     render(this._board.getElement(), this._loadMore.getElement());
   }
 
+  _onDataChange(newData, oldData) {
+    this._tasks[this._tasks.findIndex((it) => it === oldData)] = newData;
+
+    this._renderBoard(this._tasks);
+  }
+
+  _onChangeView() {
+    this._subscriptions.forEach((it) => it());
+  }
+
   init() {
     render(this._board.getElement(), this._sort.getElement());
     render(this._container, this._board.getElement());
     render(this._board.getElement(), this._taskList.getElement());
 
-    this._renderCards(this._tasks.splice(0, PAGE_COUNT));
+    this._renderBoard(this._tasks.splice(0, PAGE_COUNT));
     let activeTasks = this._tasks.filter((task) => task.isArchive);
     let emptyBoard = new EmptyBoard();
     if (activeTasks.length === 0) {

@@ -1,4 +1,4 @@
-const boolRandom = () => Boolean(Math.round(Math.random() * 0.6));
+const boolRandom = () => Boolean(Math.round(Math.random() * 0.8));
 
 export const getTask = (count = 1) => {
   let result = [];
